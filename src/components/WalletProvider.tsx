@@ -2,7 +2,6 @@
 
 import { FC, ReactNode } from 'react';
 import { UnifiedWalletProvider } from '@jup-ag/wallet-adapter';
-import '@jup-ag/wallet-adapter/dist/components.esm.css';
 
 export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
   return (
