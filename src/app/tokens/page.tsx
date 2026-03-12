@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import { useRouter } from 'next/navigation';
 import { ManualMintInput } from '@/components/ManualMintInput';
-import { Info } from 'lucide-react';
 
 export default function TokensPage() {
   const { publicKey, connected } = useWallet();
@@ -17,32 +16,37 @@ export default function TokensPage() {
   if (!connected || !publicKey) return null;
 
   return (
-    <div className="flex flex-col gap-8 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Find your token</h1>
-        <p className="text-[#6b7280] text-sm">
-          Enter your token's mint address. We'll detect if you're the creator using
-          multiple on-chain methods — mint authority, pump.fun, Meteora DBC, or genesis transaction.
+    <div className="max-w-5xl mx-auto px-6 py-16 flex flex-col gap-12">
+
+      <div className="border-b border-[#1e1e1e] pb-8">
+        <p className="text-[11px] uppercase tracking-widest text-[#666] mb-4">Step 01 — Find your token</p>
+        <h1 className="text-3xl font-bold mb-3">Token Lookup</h1>
+        <p className="text-[#666] text-sm max-w-lg leading-relaxed">
+          Enter your token's mint address. We verify you're the creator using multiple
+          on-chain methods — pump.fun, Meteora DBC, mint authority, or genesis transaction.
         </p>
-        <p className="text-[#6b7280] text-xs mt-2 font-mono truncate">
-          Connected: {publicKey.toBase58()}
+        <p className="text-[11px] font-mono text-[#444] mt-4 truncate">
+          {publicKey.toBase58()}
         </p>
       </div>
 
-      {/* Info box — detection methods */}
-      <div className="border border-[#1f1f1f] rounded-xl p-4 bg-[#111111] flex gap-3">
-        <Info size={16} className="text-[#7C3AED] shrink-0 mt-0.5" />
-        <div className="text-sm text-[#6b7280] space-y-1">
-          <p className="text-[#f5f5f5] font-medium text-xs uppercase tracking-wide mb-2">How we verify you're the creator</p>
-          <p><span className="text-green-400">🎯 pump.fun</span> — reads creator from the bonding curve account on-chain</p>
-          <p><span className="text-blue-400">🌊 Meteora DBC</span> — reads creator from the DBC pool state on-chain</p>
-          <p><span className="text-purple-400">🔑 Mint authority</span> — checks if your wallet is still the mint authority</p>
-          <p><span className="text-yellow-400">🧬 Genesis tx</span> — checks if your wallet signed the original token creation tx</p>
-        </div>
+      {/* Detection methods legend */}
+      <div className="border border-[#1e1e1e] p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'pump.fun creator', tag: 'PUMP' },
+          { label: 'Meteora DBC creator', tag: 'DBC' },
+          { label: 'Mint authority', tag: 'MINT' },
+          { label: 'Genesis tx deployer', tag: 'GENESIS' },
+        ].map(({ label, tag }) => (
+          <div key={tag}>
+            <p className="text-[10px] font-mono text-[#444] border border-[#1e1e1e] inline-block px-1.5 py-0.5 mb-1">{tag}</p>
+            <p className="text-[11px] text-[#666]">{label}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Main input */}
       <ManualMintInput walletAddr={publicKey.toBase58()} />
+
     </div>
   );
 }

@@ -3,108 +3,73 @@
 import { TokenInfo } from '@/lib/types';
 import { CreatorMethod } from '@/lib/solana';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
+import { ExternalLink, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 
-const METHOD_BADGE: Record<CreatorMethod, { label: string; color: string }> = {
-  pump_fun:       { label: '🎯 pump.fun creator',     color: 'bg-green-500/10 text-green-400 border-green-500/20' },
-  meteora_dbc:    { label: '🌊 Meteora DBC creator',  color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
-  mint_authority: { label: '🔑 Mint authority',        color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
-  genesis_tx:     { label: '🧬 Token deployer',        color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
-  none:           { label: '❓ Unknown',               color: 'bg-gray-500/10 text-gray-400 border-gray-500/20' },
+const METHOD_TAG: Record<CreatorMethod, string> = {
+  pump_fun:       'PUMP.FUN',
+  meteora_dbc:    'METEORA DBC',
+  mint_authority: 'MINT AUTHORITY',
+  genesis_tx:     'GENESIS TX',
+  none:           'UNKNOWN',
 };
 
 export function TokenCard({ token }: { token: TokenInfo }) {
   const router = useRouter();
-  const badge = METHOD_BADGE[token.creatorMethod] ?? METHOD_BADGE.none;
+  const tag = METHOD_TAG[token.creatorMethod] ?? 'UNKNOWN';
 
   return (
-    <div className="border border-[#1f1f1f] rounded-xl p-5 bg-[#111111] flex flex-col gap-4 hover:border-[#7C3AED]/50 transition-colors">
+    <div className="border border-[#1e1e1e] bg-[#0a0a0a] flex flex-col gap-0">
+
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4 p-5 border-b border-[#1e1e1e]">
         {token.logo ? (
-          <Image
-            src={token.logo}
-            alt={token.symbol}
-            width={40}
-            height={40}
-            className="rounded-full"
-            unoptimized
-          />
+          <Image src={token.logo} alt={token.symbol} width={36} height={36} className="rounded-full" unoptimized />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-[#1f1f1f] flex items-center justify-center text-sm font-bold text-[#7C3AED]">
+          <div className="w-9 h-9 border border-[#1e1e1e] flex items-center justify-center text-xs font-bold font-mono text-[#666]">
             {token.symbol.slice(0, 2).toUpperCase()}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{token.name}</p>
-          <p className="text-sm text-[#6b7280]">${token.symbol}</p>
+          <p className="text-xs text-[#666] font-mono">${token.symbol}</p>
         </div>
-        <CheckCircle size={16} className="text-[#10B981] shrink-0" />
-      </div>
-
-      {/* Creator method badge */}
-      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium w-fit ${badge.color}`}>
-        {badge.label}
+        <span className="text-[10px] font-mono text-[#444] border border-[#1e1e1e] px-1.5 py-0.5 uppercase tracking-wider shrink-0">
+          {tag}
+        </span>
       </div>
 
       {/* Mint address */}
-      <div className="bg-[#0a0a0a] rounded-lg p-3 flex items-center gap-2">
-        <span className="text-xs text-[#6b7280] font-mono truncate flex-1">
-          {token.mint}
-        </span>
-        <a
-          href={`https://solscan.io/token/${token.mint}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[#7C3AED] hover:text-[#9D6FFF] transition-colors shrink-0"
-        >
-          <ExternalLink size={13} />
+      <div className="flex items-center gap-2 px-5 py-3 border-b border-[#1e1e1e]">
+        <span className="text-[11px] font-mono text-[#444] truncate flex-1">{token.mint}</span>
+        <a href={`https://solscan.io/token/${token.mint}`} target="_blank" rel="noopener noreferrer">
+          <ExternalLink size={12} className="text-[#444] hover:text-white transition-colors" />
         </a>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <Stat label="Supply" value={token.supply} />
-        <Stat label="Decimals" value={String(token.decimals)} />
-        <Stat
-          label="Mint Authority"
-          value={token.mintAuthority ? 'Active' : 'Revoked'}
-          highlight={!!token.mintAuthority}
-        />
-        <Stat
-          label="Freeze Authority"
-          value={token.freezeAuthority ? 'Active' : 'None'}
-        />
+      <div className="grid grid-cols-4 border-b border-[#1e1e1e]">
+        {[
+          { label: 'SUPPLY', value: token.supply },
+          { label: 'DECIMALS', value: String(token.decimals) },
+          { label: 'MINT AUTH', value: token.mintAuthority ? 'ACTIVE' : 'REVOKED' },
+          { label: 'FREEZE', value: token.freezeAuthority ? 'ACTIVE' : 'NONE' },
+        ].map(({ label, value }, i) => (
+          <div key={label} className={`px-4 py-3 ${i > 0 ? 'border-l border-[#1e1e1e]' : ''}`}>
+            <p className="text-[9px] font-mono tracking-widest text-[#444] mb-1">{label}</p>
+            <p className="text-xs font-mono text-white">{value}</p>
+          </div>
+        ))}
       </div>
 
       {/* Action */}
       <button
         onClick={() => router.push(`/incorporate/${token.mint}`)}
-        className="w-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-lg py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+        className="flex items-center justify-between px-5 py-4 text-xs uppercase tracking-widest font-medium hover:bg-white hover:text-black transition-colors group"
       >
-        Incorporate this token
-        <ArrowRight size={15} />
+        <span>Incorporate this token</span>
+        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
       </button>
-    </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div className="bg-[#0a0a0a] rounded-lg px-3 py-2">
-      <p className="text-[10px] text-[#6b7280] uppercase tracking-wide mb-0.5">{label}</p>
-      <p className={`text-sm font-medium ${highlight ? 'text-[#10B981]' : 'text-[#f5f5f5]'}`}>
-        {value}
-      </p>
     </div>
   );
 }

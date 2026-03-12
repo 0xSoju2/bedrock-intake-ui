@@ -5,7 +5,7 @@ import { PublicKey } from '@solana/web3.js';
 import { getTokenByMint } from '@/lib/solana';
 import { TokenInfo } from '@/lib/types';
 import { TokenCard } from './TokenCard';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export function ManualMintInput({ walletAddr }: { walletAddr: string }) {
   const [input, setInput] = useState('');
@@ -19,61 +19,55 @@ export function ManualMintInput({ walletAddr }: { walletAddr: string }) {
     const addr = input.trim();
     if (!addr) return;
 
-    try {
-      new PublicKey(addr);
-    } catch {
-      setError('Invalid Solana address');
-      return;
-    }
+    try { new PublicKey(addr); }
+    catch { setError('INVALID ADDRESS'); return; }
 
     setLoading(true);
     try {
       const result = await getTokenByMint(addr, walletAddr);
-      if (!result) {
-        setError('Token not found on-chain');
-        return;
-      }
+      if (!result) { setError('TOKEN NOT FOUND ON-CHAIN'); return; }
 
       if (!result.isAuthority) {
         setError(
-          `Your wallet was not detected as the creator of this token.\n` +
-          `Detection method tried: ${result.creatorLabel}\n` +
-          `Detected creator: ${result.detectedCreator ?? 'none'}`
+          `NOT VERIFIED AS CREATOR\n` +
+          `METHOD: ${result.creatorLabel.toUpperCase()}\n` +
+          `DETECTED CREATOR: ${result.detectedCreator ?? 'NONE'}`
         );
         return;
       }
-
       setToken(result);
     } catch {
-      setError('Failed to fetch token info');
+      setError('FAILED TO FETCH TOKEN INFO');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-2">
+    <div className="flex flex-col gap-6">
+      <div className="flex gap-0 border border-[#1e1e1e]">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Token mint address"
-          className="flex-1 bg-[#111111] border border-[#1f1f1f] rounded-lg px-4 py-2.5 text-sm font-mono text-[#f5f5f5] placeholder-[#6b7280] focus:outline-none focus:border-[#7C3AED] transition-colors"
+          className="flex-1 bg-transparent px-4 py-3 text-sm font-mono text-white placeholder-[#444] focus:outline-none"
         />
         <button
           onClick={handleSearch}
           disabled={loading || !input.trim()}
-          className="bg-[#1f1f1f] hover:bg-[#2a2a2a] disabled:opacity-50 text-[#f5f5f5] rounded-lg px-4 py-2.5 text-sm transition-colors flex items-center gap-2"
+          className="border-l border-[#1e1e1e] px-6 py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-white hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
         >
-          {loading ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
-          Look up
+          {loading ? <Loader2 size={13} className="animate-spin" /> : null}
+          {loading ? 'Scanning...' : 'Verify'}
         </button>
       </div>
 
       {error && (
-        <p className="text-sm text-[#EF4444] whitespace-pre-line">{error}</p>
+        <div className="border border-[#1e1e1e] p-4">
+          <p className="text-[11px] font-mono text-[#666] whitespace-pre-line">{error}</p>
+        </div>
       )}
 
       {token && <TokenCard token={token} />}

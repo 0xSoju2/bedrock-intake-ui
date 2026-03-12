@@ -5,11 +5,11 @@ import { useWallet } from '@jup-ag/wallet-adapter';
 import { useRouter, useParams } from 'next/navigation';
 import { getTokenByMint, buildOwnershipMessage } from '@/lib/solana';
 import { TokenInfo, IncorporationPayload } from '@/lib/types';
-import { Shield, CheckCircle, Loader2, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Loader2, ExternalLink, ArrowLeft } from 'lucide-react';
 import bs58 from 'bs58';
 import Link from 'next/link';
 
-type Step = 'verify' | 'sign' | 'form' | 'submitted';
+type Step = 'verify' | 'form' | 'submitted';
 
 export default function IncorporatePage() {
   const { mint } = useParams<{ mint: string }>();
@@ -25,36 +25,23 @@ export default function IncorporatePage() {
   const [signError, setSignError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Disclaimer checkboxes
   const [noExistingTeam, setNoExistingTeam] = useState(false);
   const [noExistingAgreement, setNoExistingAgreement] = useState(false);
   const [ownsIP, setOwnsIP] = useState(false);
 
-  // Form state
   const [form, setForm] = useState({
-    projectName: '',
-    founderName: '',
-    founderEmail: '',
-    founderTelegram: '',
-    description: '',
-    website: '',
-    twitter: '',
+    projectName: '', founderName: '', founderEmail: '',
+    founderTelegram: '', description: '', website: '', twitter: '',
   });
 
-  useEffect(() => {
-    if (!connected) router.push('/');
-  }, [connected, router]);
-
-  useEffect(() => {
-    if (mint) loadToken();
-  }, [mint]);
+  useEffect(() => { if (!connected) router.push('/'); }, [connected, router]);
+  useEffect(() => { if (mint) loadToken(); }, [mint]);
 
   async function loadToken() {
     setLoadingToken(true);
     const t = await getTokenByMint(mint, publicKey?.toBase58());
     if (t) setToken(t);
     setLoadingToken(false);
-    setStep('verify');
   }
 
   async function handleSign() {
@@ -65,12 +52,11 @@ export default function IncorporatePage() {
       const msg = buildOwnershipMessage(mint, publicKey.toBase58());
       const encoded = new TextEncoder().encode(msg);
       const sig = await signMessage(encoded);
-      const sigB58 = bs58.encode(sig);
       setSignedMessage(msg);
-      setSignature(sigB58);
+      setSignature(bs58.encode(sig));
       setStep('form');
     } catch (err: any) {
-      setSignError(err?.message || 'Signing rejected');
+      setSignError(err?.message || 'SIGNING REJECTED');
     } finally {
       setSigning(false);
     }
@@ -82,309 +68,184 @@ export default function IncorporatePage() {
     setSubmitting(true);
     try {
       const payload: IncorporationPayload = {
-        mint,
-        symbol: token.symbol,
-        name: token.name,
-        wallet: publicKey.toBase58(),
-        signature,
-        message: signedMessage,
-        timestamp: Date.now(),
-        creatorMethod: token.creatorMethod,
+        mint, symbol: token.symbol, name: token.name,
+        wallet: publicKey.toBase58(), signature, message: signedMessage,
+        timestamp: Date.now(), creatorMethod: token.creatorMethod,
         declaredNoExistingTeam: noExistingTeam,
         declaredNoExistingAgreement: noExistingAgreement,
         declaredOwnsIP: ownsIP,
         ...form,
       };
-
-      // For now — log + show success. Replace with API call when backend ready.
       console.log('Incorporation payload:', payload);
-
-      // TODO: POST to /api/incorporate or send to Bedrock backend
-      // await fetch('/api/incorporate', { method: 'POST', body: JSON.stringify(payload) });
-
       setStep('submitted');
     } finally {
       setSubmitting(false);
     }
   }
 
-  function updateForm(key: keyof typeof form, value: string) {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  }
-
   if (!connected || !publicKey) return null;
 
-  if (loadingToken) {
-    return (
-      <div className="flex items-center gap-3 text-[#6b7280] mt-10">
-        <Loader2 size={18} className="animate-spin" />
-        <span className="text-sm">Loading token info...</span>
-      </div>
-    );
-  }
+  if (loadingToken) return (
+    <div className="max-w-5xl mx-auto px-6 py-16 flex items-center gap-3 text-[#444]">
+      <Loader2 size={16} className="animate-spin" />
+      <span className="text-sm font-mono uppercase tracking-widest">Loading token...</span>
+    </div>
+  );
 
-  if (!token) {
-    return (
-      <div className="text-center mt-10">
-        <p className="text-[#EF4444]">Token not found: {mint}</p>
-        <Link href="/tokens" className="text-[#7C3AED] text-sm mt-2 block">
-          ← Back to tokens
-        </Link>
-      </div>
-    );
-  }
+  if (!token) return (
+    <div className="max-w-5xl mx-auto px-6 py-16">
+      <p className="text-sm font-mono text-[#666]">TOKEN NOT FOUND: {mint}</p>
+      <Link href="/tokens" className="text-xs uppercase tracking-widest text-[#444] hover:text-white mt-4 block">← Back</Link>
+    </div>
+  );
 
   return (
-    <div className="max-w-2xl flex flex-col gap-8">
-      {/* Back */}
-      <Link
-        href="/tokens"
-        className="flex items-center gap-1 text-[#6b7280] text-sm hover:text-[#f5f5f5] transition-colors w-fit"
-      >
-        <ArrowLeft size={14} /> Back to tokens
+    <div className="max-w-5xl mx-auto px-6 py-16 flex flex-col gap-10">
+
+      <Link href="/tokens" className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-[#444] hover:text-white transition-colors w-fit">
+        <ArrowLeft size={12} /> Back
       </Link>
 
       {/* Token header */}
-      <div className="border border-[#1f1f1f] rounded-xl p-5 bg-[#111111] flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-[#1f1f1f] flex items-center justify-center text-sm font-bold text-[#7C3AED]">
+      <div className="border border-[#1e1e1e] flex items-center gap-4 p-5">
+        <div className="w-10 h-10 border border-[#1e1e1e] flex items-center justify-center text-xs font-mono text-[#666]">
           {token.symbol.slice(0, 2).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold">{token.name}</p>
-          <p className="text-sm text-[#6b7280]">${token.symbol}</p>
-          <div className="flex items-center gap-1 mt-1">
-            <span className="text-xs text-[#6b7280] font-mono truncate">{mint}</span>
-            <a href={`https://solscan.io/token/${mint}`} target="_blank" rel="noopener noreferrer">
-              <ExternalLink size={11} className="text-[#6b7280] hover:text-[#7C3AED]" />
-            </a>
-          </div>
+          <p className="text-xs font-mono text-[#444]">${token.symbol}</p>
         </div>
-        {token.isAuthority && (
-          <CheckCircle size={20} className="text-[#10B981] shrink-0" />
-        )}
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-mono text-[#444] border border-[#1e1e1e] px-1.5 py-0.5 uppercase">
+            {token.creatorMethod.replace('_', ' ')}
+          </span>
+          <a href={`https://solscan.io/token/${token.mint}`} target="_blank" rel="noopener noreferrer">
+            <ExternalLink size={13} className="text-[#444] hover:text-white" />
+          </a>
+        </div>
       </div>
 
-      {/* Authority check */}
+      {/* Not authority warning */}
       {!token.isAuthority && (
-        <div className="border border-[#EF4444]/30 bg-[#EF4444]/10 rounded-xl p-4 text-sm text-[#EF4444]">
-          ⚠️ Your connected wallet is not the mint authority for this token. You cannot incorporate it.
-          <br />
-          <span className="text-[#6b7280] text-xs mt-1 block">
-            Mint authority: {token.mintAuthority || 'revoked'}
-          </span>
+        <div className="border border-[#1e1e1e] p-4 font-mono text-xs text-[#666]">
+          NOT VERIFIED — your wallet was not detected as the creator of this token.
+          DETECTED CREATOR: {token.detectedCreator || 'NONE'}
         </div>
       )}
 
       {token.isAuthority && (
         <>
-          {/* Permissionless disclaimer — always visible */}
-          <div className="border border-[#F59E0B]/30 bg-[#F59E0B]/5 rounded-xl p-4 text-sm">
-            <p className="text-[#F59E0B] font-medium mb-1">Before you continue</p>
-            <ul className="space-y-1 text-[#9ca3af]">
-              <li>
-                Bedrock is a <span className="text-[#f5f5f5]">permissionless framework</span> — anyone can apply, but incorporation is reviewed and may not succeed.
-              </li>
-              <li>
-                Submitting this application <span className="text-[#f5f5f5]">does not guarantee</span> a Bedrock entity will be formed.
-              </li>
-              <li>
-                All benefits are only guaranteed <span className="text-[#f5f5f5]">after successful incorporation</span>.
-              </li>
-            </ul>
+          {/* Disclaimer — always visible */}
+          <div className="border border-[#1e1e1e] p-5 font-mono text-[11px] text-[#444] leading-relaxed">
+            <p className="text-white mb-2 uppercase tracking-widest text-[10px]">Before you continue</p>
+            Bedrock is a permissionless framework — anyone can apply, but incorporation is reviewed and may not succeed.
+            Submitting this application does not guarantee a Bedrock entity will be formed.
+            All benefits are only guaranteed after successful incorporation.
           </div>
 
-          {/* Step: Verify */}
+          {/* Step: Verify (sign) */}
           {step === 'verify' && (
-            <StepCard
-              icon={<Shield size={22} className="text-[#7C3AED]" />}
-              title="Prove ownership"
-              desc="Sign a message to cryptographically prove you control this token's mint. This doesn't send any transaction — it's a free off-chain signature."
-            >
-              <div className="bg-[#0a0a0a] rounded-lg p-4 font-mono text-xs text-[#6b7280] whitespace-pre leading-relaxed">
-                {buildOwnershipMessage(mint, publicKey.toBase58())}
+            <div className="border border-[#1e1e1e] flex flex-col gap-0">
+              <div className="border-b border-[#1e1e1e] px-5 py-4">
+                <p className="text-[11px] uppercase tracking-widest text-[#666] mb-1">Step 02 — Prove ownership</p>
+                <p className="text-sm text-[#999]">
+                  Sign a message to prove you created this token. Off-chain — no gas, no transaction.
+                </p>
               </div>
-              {signError && <p className="text-[#EF4444] text-sm">{signError}</p>}
+              <div className="px-5 py-4 border-b border-[#1e1e1e]">
+                <pre className="text-[11px] font-mono text-[#444] leading-relaxed whitespace-pre-wrap">
+                  {buildOwnershipMessage(mint, publicKey.toBase58())}
+                </pre>
+              </div>
+              {signError && (
+                <div className="px-5 py-3 border-b border-[#1e1e1e]">
+                  <p className="text-[11px] font-mono text-[#666]">{signError}</p>
+                </div>
+              )}
               <button
                 onClick={handleSign}
                 disabled={signing}
-                className="w-full bg-[#7C3AED] hover:bg-[#6D28D9] disabled:opacity-60 text-white rounded-lg py-3 font-medium transition-colors flex items-center justify-center gap-2"
+                className="px-5 py-4 text-[11px] uppercase tracking-widest font-medium hover:bg-white hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-left"
               >
-                {signing ? (
-                  <><Loader2 size={15} className="animate-spin" /> Waiting for signature...</>
-                ) : (
-                  <><Shield size={15} /> Sign & Continue</>
-                )}
+                {signing && <Loader2 size={12} className="animate-spin" />}
+                {signing ? 'Waiting for signature...' : 'Sign message →'}
               </button>
-            </StepCard>
+            </div>
           )}
 
           {/* Step: Form */}
           {step === 'form' && (
-            <StepCard
-              icon={<CheckCircle size={22} className="text-[#10B981]" />}
-              title="Ownership verified ✓"
-              desc="Now fill in your project details to complete the Bedrock intake application."
-            >
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div className="bg-[#0a0a0a] rounded-lg px-4 py-2 flex items-center gap-2">
-                  <CheckCircle size={13} className="text-[#10B981]" />
-                  <span className="text-xs text-[#6b7280] font-mono truncate">
-                    Signed: {signature.slice(0, 20)}...
-                  </span>
-                </div>
+            <div className="border border-[#1e1e1e]">
+              <div className="border-b border-[#1e1e1e] px-5 py-4">
+                <p className="text-[11px] uppercase tracking-widest text-[#666] mb-1">Step 03 — Incorporation details</p>
+                <p className="text-[11px] font-mono text-[#444]">SIGNED: {signature.slice(0, 24)}...</p>
+              </div>
 
-                <Field label="Project Name *" required>
-                  <input
-                    required
-                    type="text"
-                    value={form.projectName}
-                    onChange={(e) => updateForm('projectName', e.target.value)}
-                    placeholder="e.g. Blitz Protocol"
-                    className={inputClass}
-                  />
-                </Field>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Your Name *" required>
-                    <input
-                      required
-                      type="text"
-                      value={form.founderName}
-                      onChange={(e) => updateForm('founderName', e.target.value)}
-                      placeholder="Full name"
-                      className={inputClass}
-                    />
+              <form onSubmit={handleSubmit} className="flex flex-col gap-0">
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                  <Field label="PROJECT NAME" required className="border-b border-[#1e1e1e] md:border-r">
+                    <input required type="text" value={form.projectName} onChange={e => setForm(p => ({...p, projectName: e.target.value}))} placeholder="e.g. Blitz Protocol" className={inputClass} />
                   </Field>
-                  <Field label="Email *" required>
-                    <input
-                      required
-                      type="email"
-                      value={form.founderEmail}
-                      onChange={(e) => updateForm('founderEmail', e.target.value)}
-                      placeholder="you@example.com"
-                      className={inputClass}
-                    />
+                  <Field label="YOUR NAME" required className="border-b border-[#1e1e1e]">
+                    <input required type="text" value={form.founderName} onChange={e => setForm(p => ({...p, founderName: e.target.value}))} placeholder="Full name" className={inputClass} />
+                  </Field>
+                  <Field label="EMAIL" required className="border-b border-[#1e1e1e] md:border-r">
+                    <input required type="email" value={form.founderEmail} onChange={e => setForm(p => ({...p, founderEmail: e.target.value}))} placeholder="you@example.com" className={inputClass} />
+                  </Field>
+                  <Field label="TELEGRAM" required className="border-b border-[#1e1e1e]">
+                    <input required type="text" value={form.founderTelegram} onChange={e => setForm(p => ({...p, founderTelegram: e.target.value}))} placeholder="@handle" className={inputClass} />
+                  </Field>
+                  <Field label="WEBSITE" className="border-b border-[#1e1e1e] md:border-r">
+                    <input type="url" value={form.website} onChange={e => setForm(p => ({...p, website: e.target.value}))} placeholder="https://yourproject.xyz" className={inputClass} />
+                  </Field>
+                  <Field label="TWITTER / X" className="border-b border-[#1e1e1e]">
+                    <input type="text" value={form.twitter} onChange={e => setForm(p => ({...p, twitter: e.target.value}))} placeholder="@handle" className={inputClass} />
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Telegram handle *" required>
-                    <input
-                      required
-                      type="text"
-                      value={form.founderTelegram}
-                      onChange={(e) => updateForm('founderTelegram', e.target.value)}
-                      placeholder="@yourhandle"
-                      className={inputClass}
-                    />
-                  </Field>
-                  <Field label="Twitter / X">
-                    <input
-                      type="text"
-                      value={form.twitter}
-                      onChange={(e) => updateForm('twitter', e.target.value)}
-                      placeholder="@yourhandle"
-                      className={inputClass}
-                    />
-                  </Field>
-                </div>
-
-                <Field label="Website">
-                  <input
-                    type="url"
-                    value={form.website}
-                    onChange={(e) => updateForm('website', e.target.value)}
-                    placeholder="https://yourproject.xyz"
-                    className={inputClass}
-                  />
+                <Field label="WHAT ARE YOU BUILDING?" required className="border-b border-[#1e1e1e]">
+                  <textarea required rows={4} value={form.description} onChange={e => setForm(p => ({...p, description: e.target.value}))} placeholder="Describe your project — what it is, who it's for, and why real ownership matters for your tokenholders." className={`${inputClass} resize-none`} />
                 </Field>
 
-                <Field label="What are you building? *" required>
-                  <textarea
-                    required
-                    rows={4}
-                    value={form.description}
-                    onChange={(e) => updateForm('description', e.target.value)}
-                    placeholder="Describe your project — what it is, who it's for, and why real ownership matters for your tokenholders."
-                    className={`${inputClass} resize-none`}
-                  />
-                </Field>
-
-                {/* Disclaimers */}
-                <div className="border border-[#F59E0B]/30 bg-[#F59E0B]/5 rounded-xl p-4 flex flex-col gap-3">
-                  <p className="text-xs text-[#F59E0B] font-medium uppercase tracking-wide">
-                    Required declarations
-                  </p>
-                  <Checkbox
-                    id="no-team"
-                    checked={noExistingTeam}
-                    onChange={setNoExistingTeam}
-                    label="I confirm there is no existing incorporated team, company, or legal entity associated with this token or project."
-                  />
-                  <Checkbox
-                    id="no-agreement"
-                    checked={noExistingAgreement}
-                    onChange={setNoExistingAgreement}
-                    label="I confirm there are no existing equity agreements, SAFEs, convertible notes, or investor commitments that would conflict with a Bedrock Foundation structure."
-                  />
-                  <Checkbox
-                    id="owns-ip"
-                    checked={ownsIP}
-                    onChange={setOwnsIP}
-                    label="I confirm that I am the rightful owner of all intellectual property related to this project and have the right to incorporate it under a Bedrock Foundation entity."
-                  />
+                {/* Declarations */}
+                <div className="p-5 border-b border-[#1e1e1e] flex flex-col gap-4">
+                  <p className="text-[10px] uppercase tracking-widest text-[#444]">Required Declarations</p>
+                  <Checkbox id="no-team" checked={noExistingTeam} onChange={setNoExistingTeam}
+                    label="I confirm there is no existing incorporated team, company, or legal entity associated with this token or project." />
+                  <Checkbox id="no-agreement" checked={noExistingAgreement} onChange={setNoExistingAgreement}
+                    label="I confirm there are no existing equity agreements, SAFEs, convertible notes, or investor commitments that would conflict with a Bedrock Foundation structure." />
+                  <Checkbox id="owns-ip" checked={ownsIP} onChange={setOwnsIP}
+                    label="I confirm I am the rightful owner of all intellectual property related to this project and have the right to incorporate it under a Bedrock Foundation entity." />
                 </div>
 
                 <button
                   type="submit"
                   disabled={submitting || !noExistingTeam || !noExistingAgreement || !ownsIP}
-                  className="w-full bg-[#7C3AED] hover:bg-[#6D28D9] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg py-3 font-medium transition-colors flex items-center justify-center gap-2"
+                  className="px-5 py-4 text-[11px] uppercase tracking-widest font-medium hover:bg-white hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-left"
                 >
-                  {submitting ? (
-                    <><Loader2 size={15} className="animate-spin" /> Submitting...</>
-                  ) : (
-                    'Submit Bedrock Intake Application'
-                  )}
+                  {submitting && <Loader2 size={12} className="animate-spin" />}
+                  {submitting ? 'Submitting...' : 'Submit Bedrock Intake Application →'}
                 </button>
               </form>
-            </StepCard>
+            </div>
           )}
 
           {/* Step: Submitted */}
           {step === 'submitted' && (
-            <div className="border border-[#10B981]/30 bg-[#10B981]/10 rounded-xl p-8 text-center flex flex-col items-center gap-4">
-              <CheckCircle size={48} className="text-[#10B981]" />
-              <h2 className="text-xl font-bold">Application submitted</h2>
-              <p className="text-[#6b7280] text-sm max-w-sm">
-                The Bedrock team will review your application within 5-7 days. Expect a
-                message from{' '}
-                <a
-                  href="https://t.me/Pranave"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#7C3AED] hover:underline"
-                >
-                  @Pranave on Telegram
-                </a>
-                .
-              </p>
-              <div className="bg-[#0a0a0a] rounded-lg px-4 py-2 w-full">
-                <p className="text-xs text-[#6b7280] font-mono text-left">
-                  Token: {mint.slice(0, 16)}...
-                </p>
-                <p className="text-xs text-[#6b7280] font-mono text-left">
-                  Wallet: {publicKey?.toBase58().slice(0, 16)}...
-                </p>
-                <p className="text-xs text-[#6b7280] font-mono text-left">
-                  Sig: {signature.slice(0, 20)}...
+            <div className="border border-[#1e1e1e] flex flex-col gap-0">
+              <div className="border-b border-[#1e1e1e] px-5 py-4">
+                <p className="text-[11px] uppercase tracking-widest text-[#444]">Application submitted</p>
+              </div>
+              <div className="px-5 py-8 text-center">
+                <p className="text-2xl font-bold mb-3">✓</p>
+                <p className="text-sm text-[#999] max-w-sm mx-auto leading-relaxed">
+                  The Bedrock team will review within 5–7 days. Expect a message from{' '}
+                  <a href="https://t.me/Pranave" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">@Pranave on Telegram</a>.
                 </p>
               </div>
-              <Link
-                href="/tokens"
-                className="text-[#7C3AED] text-sm hover:underline"
-              >
-                ← Back to tokens
-              </Link>
+              <div className="border-t border-[#1e1e1e] px-5 py-3">
+                <p className="text-[10px] font-mono text-[#444]">MINT: {mint.slice(0,20)}... | SIG: {signature.slice(0,20)}...</p>
+              </div>
             </div>
           )}
         </>
@@ -393,88 +254,27 @@ export default function IncorporatePage() {
   );
 }
 
-const inputClass =
-  'w-full bg-[#0a0a0a] border border-[#1f1f1f] rounded-lg px-3 py-2.5 text-sm text-[#f5f5f5] placeholder-[#6b7280] focus:outline-none focus:border-[#7C3AED] transition-colors';
+const inputClass = 'w-full bg-transparent px-4 py-3 text-sm text-white placeholder-[#333] focus:outline-none font-mono';
 
-function Field({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
+function Field({ label, required, children, className = '' }: { label: string; required?: boolean; children: React.ReactNode; className?: string }) {
   return (
-    <div>
-      <label className="text-xs text-[#6b7280] mb-1.5 block">
-        {label}
-        {required && <span className="text-[#7C3AED] ml-0.5">*</span>}
-      </label>
+    <div className={className}>
+      <div className="px-4 pt-3 pb-0">
+        <p className="text-[9px] uppercase tracking-widest text-[#444] mb-1">{label}{required && ' *'}</p>
+      </div>
       {children}
     </div>
   );
 }
 
-function Checkbox({
-  id,
-  checked,
-  onChange,
-  label,
-}: {
-  id: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-}) {
+function Checkbox({ id, checked, onChange, label }: { id: string; checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
     <label htmlFor={id} className="flex items-start gap-3 cursor-pointer group">
-      <div
-        className={`mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${
-          checked
-            ? 'bg-[#7C3AED] border-[#7C3AED]'
-            : 'bg-transparent border-[#4b5563] group-hover:border-[#7C3AED]'
-        }`}
-      >
-        {checked && (
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-            <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
+      <div className={`mt-0.5 w-4 h-4 border shrink-0 flex items-center justify-center transition-colors ${checked ? 'bg-white border-white' : 'bg-transparent border-[#333] group-hover:border-white'}`}>
+        {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
       </div>
-      <input
-        id={id}
-        type="checkbox"
-        className="sr-only"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <span className="text-sm text-[#9ca3af] leading-relaxed">{label}</span>
+      <input id={id} type="checkbox" className="sr-only" checked={checked} onChange={e => onChange(e.target.checked)} />
+      <span className="text-xs text-[#666] leading-relaxed">{label}</span>
     </label>
-  );
-}
-
-function StepCard({
-  icon,
-  title,
-  desc,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="border border-[#1f1f1f] rounded-xl p-6 bg-[#111111] flex flex-col gap-5">
-      <div className="flex items-start gap-3">
-        {icon}
-        <div>
-          <p className="font-semibold">{title}</p>
-          <p className="text-sm text-[#6b7280] mt-0.5">{desc}</p>
-        </div>
-      </div>
-      {children}
-    </div>
   );
 }

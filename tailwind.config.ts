@@ -5,21 +5,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bedrock: {
-          bg: '#0a0a0a',
-          card: '#111111',
-          border: '#1f1f1f',
-          accent: '#7C3AED',
-          accentHover: '#6D28D9',
-          text: '#f5f5f5',
-          muted: '#6b7280',
-          green: '#10B981',
-          yellow: '#F59E0B',
-          red: '#EF4444',
+        br: {
+          black:  '#000000',
+          white:  '#ffffff',
+          border: '#1e1e1e',
+          muted:  '#666666',
+          dim:    '#999999',
+          card:   '#0a0a0a',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
     },

@@ -5,16 +5,16 @@ import { Navbar } from '@/components/Navbar';
 
 export const metadata: Metadata = {
   title: 'Bedrock Intake',
-  description: 'Incorporate your token with Bedrock Foundation',
+  description: 'The Bedrock of Internet Capital Markets — Incorporate your token',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-[#0a0a0a] text-[#f5f5f5] min-h-screen">
+      <body className="bg-black text-white min-h-screen">
         <SolanaWalletProvider>
           <Navbar />
-          <main className="max-w-4xl mx-auto px-4 py-10">{children}</main>
+          <main>{children}</main>
         </SolanaWalletProvider>
       </body>
     </html>

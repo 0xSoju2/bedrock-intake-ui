@@ -4,7 +4,9 @@ import { useWallet } from '@jup-ag/wallet-adapter';
 import { UnifiedWalletButton } from '@jup-ag/wallet-adapter';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Shield, Zap, Users, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+
+const TICKER = 'MAKE TOKENS GREAT AGAIN / REAL OWNERSHIP / INTERNET CAPITAL MARKETS / BUILD WITH BEDROCK / THE ONLY WAY IS UP / ';
 
 export default function Home() {
   const { connected } = useWallet();
@@ -15,106 +17,108 @@ export default function Home() {
   }, [connected, router]);
 
   return (
-    <div className="flex flex-col items-center text-center py-16 gap-12">
-      {/* Hero */}
-      <div className="flex flex-col items-center gap-6 max-w-2xl">
-        <span className="text-5xl">🪨</span>
-        <h1 className="text-4xl font-bold tracking-tight">
-          Real ownership.
-          <br />
-          <span className="text-[#7C3AED]">On-chain, for real.</span>
-        </h1>
-        <p className="text-[#6b7280] text-lg leading-relaxed">
-          Bedrock Foundation gives your token a legal entity and real equity structure for
-          tokenholders. Connect your wallet to see your tokens, prove ownership, and start
-          the incorporation process.
-        </p>
-        <UnifiedWalletButton />
-      </div>
+    <div className="flex flex-col min-h-screen bg-black text-white">
 
-      {/* Steps */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mt-4">
-        <Step
-          icon={<Zap size={20} className="text-[#7C3AED]" />}
-          number="01"
-          title="Connect & Scan"
-          desc="Connect your wallet. We scan for tokens where you hold mint authority."
-        />
-        <Step
-          icon={<Shield size={20} className="text-[#7C3AED]" />}
-          number="02"
-          title="Prove Ownership"
-          desc="Sign a message to cryptographically prove you control the token's mint."
-        />
-        <Step
-          icon={<Users size={20} className="text-[#7C3AED]" />}
-          number="03"
-          title="Incorporate"
-          desc="Fill in your project details and submit. Bedrock team reviews within 5-7 days."
-        />
-      </div>
-
-      {/* What you get */}
-      <div className="border border-[#1f1f1f] rounded-xl p-6 w-full max-w-2xl text-left bg-[#111111]">
-        <h2 className="font-semibold text-lg mb-4">What you get</h2>
-        <ul className="space-y-3 text-[#9ca3af]">
-          {[
-            'Legal entity for your project ($7,500 deposit)',
-            'Real equity structure for tokenholders — not governance theater',
-            'Bedrock Founders Program access — technical support, co-marketing, LP access',
-            'Dashboard badge on Meteora pools',
-            'Path to Bedrock Institutional (institutional-grade LP access)',
-          ].map((item) => (
-            <li key={item} className="flex items-start gap-2">
-              <ArrowRight size={16} className="text-[#7C3AED] mt-0.5 shrink-0" />
-              <span>{item}</span>
-            </li>
+      {/* Ticker tape */}
+      <div className="border-b border-[#1e1e1e] py-2 overflow-hidden bg-black">
+        <div className="marquee-track">
+          {[...Array(4)].map((_, i) => (
+            <span key={i} className="text-[11px] font-mono font-medium tracking-widest text-white/60 whitespace-nowrap px-4">
+              {TICKER}
+            </span>
           ))}
-        </ul>
+        </div>
+      </div>
+
+      {/* Hero */}
+      <div className="border-b border-[#1e1e1e] px-6 py-20 max-w-5xl mx-auto w-full">
+        <h1 className="text-5xl md:text-7xl font-bold leading-none tracking-tight mb-8">
+          The Bedrock of<br />Internet Capital<br />Markets
+        </h1>
+        <p className="text-[#999] text-base max-w-lg mb-10 leading-relaxed">
+          Real-world legal frameworks that keep founders accountable. Incorporate your token,
+          give holders real equity, and access capital from anywhere in the world — permissionlessly.
+        </p>
+        <div className="flex items-center gap-4">
+          <UnifiedWalletButton />
+          <a
+            href="https://bedrockfndn.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors flex items-center gap-1"
+          >
+            Learn more <ArrowRight size={12} />
+          </a>
+        </div>
+      </div>
+
+      {/* Ticker band */}
+      <div className="border-b border-[#1e1e1e] py-3 overflow-hidden">
+        <p className="text-[11px] font-mono tracking-widest text-white/40 uppercase px-6">
+          ● BUILD WITH BEDROCK: THE ONLY WAY IS UP
+        </p>
+      </div>
+
+      {/* Feature grid */}
+      <div className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 border-b border-[#1e1e1e]">
+        <FeatureCard
+          title="Permissionless"
+          desc="Access capital from anywhere in the world. No geography. No gatekeepers. No VC filter."
+          icon="⊕"
+        />
+        <FeatureCard
+          title="Ownership"
+          desc="Real-world legal frameworks that give tokenholders actual equity in what they back."
+          icon="⊞"
+          border
+        />
+        <FeatureCard
+          title="Build"
+          desc="Focus on your business. Bedrock handles the legal structure, compliance, and cap table."
+          icon="✳"
+          border
+        />
+      </div>
+
+      {/* How it works */}
+      <div className="max-w-5xl mx-auto w-full px-6 py-16 border-b border-[#1e1e1e]">
+        <p className="text-[11px] uppercase tracking-widest text-[#666] mb-10">How it works</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Step number="01" title="Connect" desc="Connect your wallet. We scan for tokens where you hold mint authority." />
+          <Step number="02" title="Prove" desc="Sign a message to cryptographically prove you created the token." />
+          <Step number="03" title="Incorporate" desc="Submit your details. Bedrock reviews and sets up your legal entity in 5–7 days." />
+        </div>
       </div>
 
       {/* Disclaimer */}
-      <div className="border border-[#F59E0B]/30 bg-[#F59E0B]/5 rounded-xl p-5 w-full max-w-2xl text-left">
-        <p className="text-xs text-[#F59E0B] font-medium uppercase tracking-wide mb-2">Important</p>
-        <ul className="space-y-2 text-sm text-[#9ca3af]">
-          <li>
-            <span className="text-[#f5f5f5] font-medium">Bedrock is a permissionless framework.</span>{' '}
-            Anyone can apply. Incorporation is reviewed and may not succeed.
-          </li>
-          <li>
-            <span className="text-[#f5f5f5] font-medium">Incorporation can fail.</span>{' '}
-            Submitting this application does not guarantee a Bedrock entity will be formed.
-            Benefits only apply after successful incorporation.
-          </li>
-          <li>
-            <span className="text-[#f5f5f5] font-medium">The $7,500 deposit is paid upfront.</span>{' '}
-            Required before intake review begins. See terms for refund conditions.
-          </li>
-        </ul>
+      <div className="max-w-5xl mx-auto w-full px-6 py-6">
+        <div className="border border-[#1e1e1e] p-4 text-[11px] text-[#666] leading-relaxed font-mono">
+          <span className="text-white">IMPORTANT:</span> Bedrock is a permissionless framework — anyone can apply, but incorporation is reviewed and may not succeed.
+          Submitting an application does not guarantee a Bedrock entity will be formed. Benefits only apply after successful incorporation.
+          The $7,500 deposit is required before review begins.
+        </div>
       </div>
+
     </div>
   );
 }
 
-function Step({
-  icon,
-  number,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  number: string;
-  title: string;
-  desc: string;
-}) {
+function FeatureCard({ title, desc, icon, border }: { title: string; desc: string; icon: string; border?: boolean }) {
   return (
-    <div className="border border-[#1f1f1f] rounded-xl p-5 bg-[#111111] text-left">
-      <div className="flex items-center gap-2 mb-3">
-        {icon}
-        <span className="text-xs font-mono text-[#6b7280]">{number}</span>
-      </div>
-      <h3 className="font-semibold mb-1">{title}</h3>
-      <p className="text-sm text-[#6b7280] leading-relaxed">{desc}</p>
+    <div className={`p-8 border-[#1e1e1e] ${border ? 'border-l' : ''}`}>
+      <h3 className="font-semibold text-base mb-2">{title}</h3>
+      <p className="text-[#666] text-sm leading-relaxed mb-8">{desc}</p>
+      <span className="text-2xl text-[#333]">{icon}</span>
+    </div>
+  );
+}
+
+function Step({ number, title, desc }: { number: string; title: string; desc: string }) {
+  return (
+    <div>
+      <p className="text-[11px] font-mono text-[#444] mb-3">{number}</p>
+      <h3 className="font-semibold mb-2">{title}</h3>
+      <p className="text-[#666] text-sm leading-relaxed">{desc}</p>
     </div>
   );
 }
