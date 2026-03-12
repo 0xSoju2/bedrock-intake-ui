@@ -51,11 +51,8 @@ export default function IncorporatePage() {
 
   async function loadToken() {
     setLoadingToken(true);
-    const t = await getTokenByMint(mint);
-    if (t) {
-      const isAuth = t.mintAuthority === publicKey?.toBase58();
-      setToken({ ...t, isAuthority: isAuth });
-    }
+    const t = await getTokenByMint(mint, publicKey?.toBase58());
+    if (t) setToken(t);
     setLoadingToken(false);
     setStep('verify');
   }
@@ -92,6 +89,7 @@ export default function IncorporatePage() {
         signature,
         message: signedMessage,
         timestamp: Date.now(),
+        creatorMethod: token.creatorMethod,
         declaredNoExistingTeam: noExistingTeam,
         declaredNoExistingAgreement: noExistingAgreement,
         declaredOwnsIP: ownsIP,

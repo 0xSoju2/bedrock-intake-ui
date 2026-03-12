@@ -7,7 +7,7 @@ import { TokenInfo } from '@/lib/types';
 import { TokenCard } from './TokenCard';
 import { Loader2, Search } from 'lucide-react';
 
-export function ManualMintInput({ walletPubkey }: { walletPubkey: PublicKey }) {
+export function ManualMintInput({ walletAddr }: { walletAddr: string }) {
   const [input, setInput] = useState('');
   const [token, setToken] = useState<TokenInfo | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export function ManualMintInput({ walletPubkey }: { walletPubkey: PublicKey }) {
     if (!addr) return;
 
     try {
-      new PublicKey(addr); // validate
+      new PublicKey(addr);
     } catch {
       setError('Invalid Solana address');
       return;
@@ -28,23 +28,22 @@ export function ManualMintInput({ walletPubkey }: { walletPubkey: PublicKey }) {
 
     setLoading(true);
     try {
-      const result = await getTokenByMint(addr);
+      const result = await getTokenByMint(addr, walletAddr);
       if (!result) {
         setError('Token not found on-chain');
         return;
       }
 
-      const isAuthority =
-        result.mintAuthority === walletPubkey.toBase58();
-
-      if (!isAuthority) {
+      if (!result.isAuthority) {
         setError(
-          `Your wallet is not the mint authority for this token.\nMint authority: ${result.mintAuthority || 'revoked'}`
+          `Your wallet was not detected as the creator of this token.\n` +
+          `Detection method tried: ${result.creatorLabel}\n` +
+          `Detected creator: ${result.detectedCreator ?? 'none'}`
         );
         return;
       }
 
-      setToken({ ...result, isAuthority: true });
+      setToken(result);
     } catch {
       setError('Failed to fetch token info');
     } finally {
