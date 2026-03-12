@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet } from '@jup-ag/wallet-adapter';
 import { useRouter } from 'next/navigation';
 import { PublicKey } from '@solana/web3.js';
 import { getWalletMintAuthority } from '@/lib/solana';

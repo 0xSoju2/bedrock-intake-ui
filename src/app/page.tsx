@@ -1,7 +1,7 @@
 'use client';
 
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from '@jup-ag/wallet-adapter';
+import { UnifiedWalletButton } from '@jup-ag/wallet-adapter';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Shield, Zap, Users, ArrowRight } from 'lucide-react';
@@ -29,7 +29,7 @@ export default function Home() {
           tokenholders. Connect your wallet to see your tokens, prove ownership, and start
           the incorporation process.
         </p>
-        <WalletMultiButton />
+        <UnifiedWalletButton />
       </div>
 
       {/* Steps */}

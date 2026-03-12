@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet } from '@jup-ag/wallet-adapter';
 import { useRouter, useParams } from 'next/navigation';
 import { getTokenByMint, buildOwnershipMessage } from '@/lib/solana';
 import { TokenInfo, IncorporationPayload } from '@/lib/types';

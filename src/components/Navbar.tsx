@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { UnifiedWalletButton } from '@jup-ag/wallet-adapter';
 
 export function Navbar() {
   return (
@@ -14,7 +14,7 @@ export function Navbar() {
             <span className="text-[#7C3AED] ml-1">Intake</span>
           </span>
         </Link>
-        <WalletMultiButton />
+        <UnifiedWalletButton />
       </div>
     </nav>
   );
