@@ -3,11 +3,6 @@
 import { FC, ReactNode, useState, useEffect } from 'react';
 import { UnifiedWalletProvider } from '@jup-ag/wallet-adapter';
 
-/**
- * Mounted guard prevents SSR hydration issues.
- * @jup-ag/wallet-adapter accesses window/document during init —
- * must only render on the client.
- */
 export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [mounted, setMounted] = useState(false);
 
@@ -15,6 +10,7 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
     setMounted(true);
   }, []);
 
+  // Skip rendering wallet provider during SSR to prevent window/document errors
   if (!mounted) return <>{children}</>;
 
   return (
@@ -35,14 +31,18 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
           href: 'https://station.jup.ag/docs/additional-topics/wallet-list',
         },
         notificationCallback: {
-          onConnect: (args) => {
-            console.log('[Bedrock] Wallet connected:', args.shortAddress);
+          onConnect: ({ shortAddress, walletName }) => {
+            console.log(`[Bedrock] ${walletName} connected: ${shortAddress}`);
           },
-          onDisconnect: () => {
-            console.log('[Bedrock] Wallet disconnected');
+          onConnecting: ({ walletName }) => {
+            console.log(`[Bedrock] Connecting to ${walletName}...`);
           },
-          onNotInstalled: (args) => {
-            window.open(args.url, '_blank');
+          onDisconnect: ({ walletName }) => {
+            console.log(`[Bedrock] ${walletName} disconnected`);
+          },
+          onNotInstalled: ({ walletName, metadata }) => {
+            console.log(`[Bedrock] ${walletName} not installed`);
+            if (metadata?.url) window.open(metadata.url, '_blank');
           },
         },
       }}
