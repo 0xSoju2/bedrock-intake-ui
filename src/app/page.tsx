@@ -95,7 +95,7 @@ export default function Home() {
         <div className="border border-[#1e1e1e] p-4 text-[11px] text-[#666] leading-relaxed font-mono">
           <span className="text-white">IMPORTANT:</span> Bedrock is a permissionless framework — anyone can apply, but incorporation is reviewed and may not succeed.
           Submitting an application does not guarantee a Bedrock entity will be formed. Benefits only apply after successful incorporation.
-          The $7,500 deposit is required before review begins.
+          A non-refundable USDC deposit is required: $7,500 for Meteora DBC tokens, $15,000 for all others.
         </div>
       </div>
 

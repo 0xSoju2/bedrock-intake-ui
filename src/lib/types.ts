@@ -35,3 +35,43 @@ export interface IncorporationPayload {
   declaredNoExistingAgreement: boolean;
   declaredOwnsIP: boolean;
 }
+
+// /bedrock/onboard API types
+
+export const BEDROCK_CATEGORIES = [
+  'RWA', 'AI', 'DEFI', 'INFRA', 'DEPIN', 'LEGAL', 'GAMING', 'NFT', 'MEME',
+] as const;
+
+export type BedrockCategory = typeof BEDROCK_CATEGORIES[number];
+
+export interface BedrockFounderDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  nationalityCountry: string;
+  taxResidencyCountry: string;
+  residentialAddress: string;
+  shareAmount: number;
+}
+
+export interface BedrockOnboardRequest {
+  projectName: string;
+  totalShareAmount: number;
+  bedrockShareAmount: number;
+  tokenAddress: string;
+  founders: BedrockFounderDto[];
+  requestOriginIpAddress: string;
+  category?: BedrockCategory;
+  twitterHandle?: string;
+}
+
+export interface BedrockOnboardResponse {
+  tokenAddress: string;
+  incorporationStatus: string;
+  founders: Array<BedrockFounderDto & { id?: string }>;
+  totalShareAmount: number;
+  bedrockShareAmount: number;
+  category?: string;
+  twitterHandle?: string;
+  createdAt: string;
+}

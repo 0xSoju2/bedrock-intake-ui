@@ -1,5 +1,11 @@
-import { Connection, PublicKey } from '@solana/web3.js';
-import { getMint } from '@solana/spl-token';
+import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import {
+  getMint,
+  getAssociatedTokenAddress,
+  getAccount,
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
+} from '@solana/spl-token';
 import { TokenInfo } from './types';
 
 const RPC =
@@ -253,4 +259,55 @@ function formatSupply(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M';
   if (n >= 1_000) return (n / 1_000).toFixed(2) + 'K';
   return n.toFixed(2);
+}
+
+// ─────────────────────────────────────────────
+// USDC fee payment
+// ─────────────────────────────────────────────
+
+const USDC_MINT = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+const USDC_DECIMALS = 6;
+
+export function getIncorporationFee(creatorMethod: CreatorMethod): number {
+  return creatorMethod === 'meteora_dbc' ? 7_500 : 15_000;
+}
+
+export async function getUsdcBalance(wallet: PublicKey): Promise<number> {
+  try {
+    const ata = await getAssociatedTokenAddress(USDC_MINT, wallet);
+    const account = await getAccount(connection, ata);
+    return Number(account.amount) / 10 ** USDC_DECIMALS;
+  } catch {
+    return 0;
+  }
+}
+
+export async function buildUsdcTransferTx(
+  sender: PublicKey,
+  amountUsdc: number,
+): Promise<Transaction> {
+  const treasury = new PublicKey(process.env.NEXT_PUBLIC_TREASURY_WALLET!);
+
+  const senderAta = await getAssociatedTokenAddress(USDC_MINT, sender);
+  const treasuryAta = await getAssociatedTokenAddress(USDC_MINT, treasury);
+
+  const tx = new Transaction();
+
+  // Ensure treasury ATA exists
+  try {
+    await getAccount(connection, treasuryAta);
+  } catch {
+    tx.add(
+      createAssociatedTokenAccountInstruction(sender, treasuryAta, treasury, USDC_MINT),
+    );
+  }
+
+  const rawAmount = BigInt(amountUsdc) * BigInt(10 ** USDC_DECIMALS);
+  tx.add(createTransferInstruction(senderAta, treasuryAta, sender, rawAmount));
+
+  tx.feePayer = sender;
+  const { blockhash } = await connection.getLatestBlockhash();
+  tx.recentBlockhash = blockhash;
+
+  return tx;
 }
